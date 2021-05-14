@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
@@ -6,6 +6,9 @@ import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import Image from "../assets/images/wall.jpg";
 import logo from "../assets/images/logo.png";
+
+import axios from "axios";
+import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -49,19 +52,69 @@ const useStyles = makeStyles((theme) => ({
 }));
 const Login = () => {
   const classes = useStyles();
+
+  //for post in database
+  const token = localStorage.getItem("token");
+  let loggedIn = true;
+  if (token == null) {
+    loggedIn = false;
+  }
+  const [post, setPost] = useState([
+    {
+      email: "",
+      password: "",
+      error: "",
+      loggedIn,
+    },
+  ]);
+  const { email, password } = post;
+  const changeHandler = (e) => {
+    setPost({ ...post, [e.target.name]: e.target.value });
+  };
+  console.log(post);
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:4000/user/login/", post)
+      .then((response) => {
+        if (response.data) {
+          console.log(response);
+          localStorage.setItem("token", response.data.token);
+          setPost({
+            loggedIn: true,
+          });
+          console.log("login");
+        } else {
+          setPost({
+            error: "username or password does not match",
+          });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  if (post.loggedIn) {
+    return <Redirect to="/menu" />;
+  }
+
   return (
     <Grid container className={classes.root}>
-      <form className={classes.form}>
+      <form className={classes.form} onSubmit={submitHandler} method="post">
         <img className={classes.logo} src={logo} />
 
         <TextField
           className={classes.field}
           id="outlined-basic"
-          label="username"
+          label="Email"
           variant="outlined"
           type="text"
-          name="username"
-          placeholder="Enter username"
+          value={email}
+          onChange={changeHandler}
+          name="email"
+          placeholder="Enter email"
           autoFocus
         />
         <div>&nbsp;</div>
@@ -71,6 +124,8 @@ const Login = () => {
           label="password"
           variant="outlined"
           type="password"
+          value={password}
+          onChange={changeHandler}
           placeholder="Enter password"
           name="password"
         />

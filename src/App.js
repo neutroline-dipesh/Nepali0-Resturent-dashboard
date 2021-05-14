@@ -9,6 +9,7 @@ import MenuItem from "./components/MenuItems";
 import MenuItemTabBar from "./components/MenuItemTabBar";
 import About from "./components/About";
 import Account from "./components/User";
+import logout from "./components/logout";
 import { BrowserRouter, Switch, Route } from "react-router-dom";
 import Error from "./components/Error";
 
@@ -26,6 +27,7 @@ function App() {
         <Route exact path="/contact" component={Contact} />
         <Route exact path="/login" component={Login} />
         <Route exact path="/user" component={Account} />
+        <Route exact path="/loginOut" component={logout} />
 
         <Route component={Error} />
       </Switch>

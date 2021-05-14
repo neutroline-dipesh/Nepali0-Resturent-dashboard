@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Grid from "@material-ui/core/Grid";
 
@@ -21,10 +21,13 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
+import { Redirect } from "react-router-dom";
+import axios from "axios";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     fontFamily: "Montserrat, sans-serif",
-    // backgroundColor: "green",
+
     width: "auto",
     height: "100vh",
     maxHeight: "100vh",
@@ -48,13 +51,8 @@ const useStyles = makeStyles((theme) => ({
   dialog: {
     display: "flex",
     flexDirection: "column",
-    // backgroundColor: "#ffcfdf",
-    // backgroundImage: "linear-gradient(315deg, #ffcfdf 0%, #b0f3f1 74%)",
   },
-  dialogTitle: {
-    // backgroundColor: "#ffcfdf",
-    // backgroundImage: "linear-gradient(315deg, #ffcfdf 0%, #b0f3f1 74%)",
-  },
+  dialogTitle: {},
   dialogButton: {
     width: "8rem",
   },
@@ -77,30 +75,77 @@ const StyledTableRow = withStyles((theme) => ({
     },
   },
 }))(TableRow);
-function createData(days, startTime, endTime) {
-  return { days, startTime, endTime };
-}
-
-const rows = [
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-  createData("sun-friday", "6:00am", "5:00pm"),
-];
 
 const Time = () => {
   const classes = useStyles();
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [data, setData] = useState([]);
 
+  //getting data from database
+  const fetchData = async () => {
+    axios.get("http://localhost:4000/time/").then((response) => {
+      if (response.data) {
+        setData(response.data.data);
+      } else {
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //for post in database
+  const [post, setPost] = useState([
+    {
+      days: "",
+      startTime: "",
+      endTime: "",
+    },
+  ]);
+  const { days, startTime, endTime } = post;
+
+  const changeHandler = (e) => {
+    setPost({ ...post, [e.target.name]: e.target.value });
+  };
+  // console.log(post);
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:4000/time/", post, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        window.location.reload(false);
+        console.log("hello");
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  //delete in database
+  const handleDelete = (id) => {
+    console.log(id);
+    axios
+      .delete("http://localhost:4000/time/" + id, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        window.location.reload(false);
+        console.log("hello");
+        console.log(response);
+      });
+  };
+
+  //others
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -108,6 +153,25 @@ const Time = () => {
   const handleClose = () => {
     setOpen(false);
   };
+  var today = new Date(),
+    time =
+      today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  const values = {
+    someDate: time,
+  };
+
+  //for token it will redirect the page to log in if token is empty
+  const token = localStorage.getItem("token");
+
+  let loggedIn = true;
+  if (token == null) {
+    loggedIn = false;
+  }
+
+  if (loggedIn === false) {
+    return <Redirect to="/" />;
+  }
+
   return (
     <>
       <SideBar />
@@ -136,20 +200,31 @@ const Time = () => {
               margin="dense"
               id="name"
               label="Days"
+              name="days"
+              value={days}
+              onChange={changeHandler}
               type="text"
             />
             <TextField
               autoFocus
               margin="dense"
               id="name"
+              defaultValue={values.someDate}
               label="Start Time"
+              name="startTime"
+              value={startTime}
+              onChange={changeHandler}
               type="time"
             />
             <TextField
               autoFocus
               margin="dense"
               id="name"
+              defaultValue={values.someDate}
               label="End Time"
+              name="endTime"
+              value={endTime}
+              onChange={changeHandler}
               type="time"
             />
           </DialogContent>
@@ -158,6 +233,8 @@ const Time = () => {
               className={classes.dialogButton}
               variant="contained"
               color="primary"
+              type="submit"
+              onClick={submitHandler}
             >
               {" "}
               Submit
@@ -189,19 +266,19 @@ const Time = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <StyledTableRow key={row.days}>
-                  <StyledTableCell align="center">{row.days}</StyledTableCell>
+              {data.map((item) => (
+                <StyledTableRow key={item._id}>
+                  <StyledTableCell align="center">{item.days}</StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.startTime}
+                    {item.startTime}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.endTime}
+                    {item.endTime}
                   </StyledTableCell>
                   <StyledTableCell align="center">
                     <EditIcon onClick={handleClickOpen} />
                     &nbsp; &nbsp; &nbsp;
-                    <DeleteIcon />
+                    <DeleteIcon onClick={() => handleDelete(item._id)} />
                   </StyledTableCell>
                 </StyledTableRow>
               ))}

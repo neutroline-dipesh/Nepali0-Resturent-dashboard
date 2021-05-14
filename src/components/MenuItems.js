@@ -28,17 +28,16 @@ import MenuItem from "@material-ui/core/MenuItem";
 import InputLabel from "@material-ui/core/InputLabel";
 
 import { district } from "./district";
+import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
-  mainDiv: {
-    // maxWidth: "100%",
-  },
+  mainDiv: {},
   root: {
     fontFamily: "Montserrat, sans-serif",
-    // backgroundColor "green",
+
     width: "auto",
     height: "100vh",
-    // maxHeight: "100vh",
+
     padding: "1rem",
     color: "#2f4050",
 
@@ -60,14 +59,8 @@ const useStyles = makeStyles((theme) => ({
   dialog: {
     display: "flex",
     flexDirection: "column",
-
-    // backgroundColor: "#ffcfdf",
-    // backgroundImage: "linear-gradient(315deg, #ffcfdf 0%, #b0f3f1 74%)",
   },
-  dialogTitle: {
-    // backgroundColor: "#ffcfdf",
-    // backgroundImage: "linear-gradient(315deg, #ffcfdf 0%, #b0f3f1 74%)",
-  },
+  dialogTitle: {},
   dialogButton: {
     width: "11rem",
   },
@@ -130,6 +123,18 @@ const Time = () => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const token = localStorage.getItem("token");
+
+  let loggedIn = true;
+  if (token == null) {
+    loggedIn = false;
+  }
+
+  if (loggedIn === false) {
+    return <Redirect to="/" />;
+  }
+
   return (
     <div className={classes.mainDiv}>
       <SideBar />

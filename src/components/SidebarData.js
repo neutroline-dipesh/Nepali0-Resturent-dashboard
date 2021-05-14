@@ -9,12 +9,6 @@ import AlarmIcon from "@material-ui/icons/Alarm";
 import NoteIcon from "@material-ui/icons/Note";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
 export const SidebarData = [
-  // {
-  //   title: "Dashboard",
-  //   icon: <DashboardIcon />,
-  //   links: "/dashboard",
-  // },
-
   {
     title: "MENU",
     icon: <MenuBookIcon />,
@@ -53,6 +47,6 @@ export const SidebarData = [
   {
     title: "LOGOUT",
     icon: <ExitToAppIcon />,
-    links: "/login",
+    links: "/loginOut",
   },
 ];

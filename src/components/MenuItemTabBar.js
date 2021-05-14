@@ -6,6 +6,7 @@ import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -13,18 +14,21 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "blue",
     height: "7vh",
     marginTop: "3.5rem",
-
-    // display: "flex",
-    // flexDirection: "column",
   },
-  // TabBar: {
-  //   "&.MuiAppBar-colorPrimary": {
-  //     backgroundColor: "#40b65f",
-  //   },
-  // },
 }));
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
+
+  const token = localStorage.getItem("token");
+
+  let loggedIn = true;
+  if (token == null) {
+    loggedIn = false;
+  }
+
+  if (loggedIn === false) {
+    return <Redirect to="/" />;
+  }
 
   return (
     <div

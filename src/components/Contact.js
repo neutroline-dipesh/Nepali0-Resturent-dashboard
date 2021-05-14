@@ -21,10 +21,12 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
+import { Redirect } from "react-router-dom";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     fontFamily: "Montserrat, sans-serif",
-    // backgroundColor: "green",
+
     width: "auto",
     height: "100vh",
     maxHeight: "100vh",
@@ -48,13 +50,8 @@ const useStyles = makeStyles((theme) => ({
   dialog: {
     display: "flex",
     flexDirection: "column",
-    // backgroundColor: "#ffcfdf",
-    // backgroundImage: "linear-gradient(315deg, #ffcfdf 0%, #b0f3f1 74%)",
   },
-  dialogTitle: {
-    // backgroundColor: "#ffcfdf",
-    // backgroundImage: "linear-gradient(315deg, #ffcfdf 0%, #b0f3f1 74%)",
-  },
+  dialogTitle: {},
   dialogButton: {
     width: "8rem",
   },
@@ -124,6 +121,18 @@ const Time = () => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const token = localStorage.getItem("token");
+
+  let loggedIn = true;
+  if (token == null) {
+    loggedIn = false;
+  }
+
+  if (loggedIn === false) {
+    return <Redirect to="/" />;
+  }
+
   return (
     <>
       <SideBar />
