@@ -1,4 +1,4 @@
-export const district = [
+export const data1 = [
   {
     id: 1,
     name: "Bhojpur",

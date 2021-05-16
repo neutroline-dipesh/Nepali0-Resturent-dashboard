@@ -80,9 +80,9 @@ const Time = () => {
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
-  const [data, setData] = useState([]);
 
   //getting data from database
+  const [data, setData] = useState([]);
   const fetchData = async () => {
     axios.get("http://localhost:4000/time/").then((response) => {
       if (response.data) {
@@ -96,15 +96,26 @@ const Time = () => {
     fetchData();
   }, []);
 
-  //for post in database
+  //for post and update in database
   const [post, setPost] = useState([
     {
+      id: "",
       days: "",
       startTime: "",
       endTime: "",
     },
   ]);
-  const { days, startTime, endTime } = post;
+  const { id, days, startTime, endTime } = post;
+
+  const editmodel = (id, days, sTime, eTime) => {
+    // console.log(id);
+    setPost({
+      id: id,
+      days: days,
+      startTime: sTime,
+      endTime: eTime,
+    });
+  };
 
   const changeHandler = (e) => {
     setPost({ ...post, [e.target.name]: e.target.value });
@@ -113,20 +124,37 @@ const Time = () => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:4000/time/", post, {
-        headers: {
-          Authorization: localStorage.getItem("token"),
-        },
-      })
-      .then((response) => {
-        window.location.reload(false);
-        console.log("hello");
-        console.log(response);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    if (post.id) {
+      axios
+        .patch("http://localhost:4000/time/" + post.id, post, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        })
+        .then((response) => {
+          window.location.reload(false);
+          // console.log("hello");
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      axios
+        .post("http://localhost:4000/time/", post, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        })
+        .then((response) => {
+          window.location.reload(false);
+          // console.log("hello");
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   };
 
   //delete in database
@@ -153,12 +181,15 @@ const Time = () => {
   const handleClose = () => {
     setOpen(false);
   };
-  var today = new Date(),
-    time =
-      today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-  const values = {
-    someDate: time,
-  };
+
+  //for update
+
+  // var today = new Date(),
+  //   time =
+  //     today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  // const values = {
+  //   someDate: time,
+  // };
 
   //for token it will redirect the page to log in if token is empty
   const token = localStorage.getItem("token");
@@ -209,7 +240,7 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
-              defaultValue={values.someDate}
+              // defaultValue={startTime}
               label="Start Time"
               name="startTime"
               value={startTime}
@@ -220,7 +251,7 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
-              defaultValue={values.someDate}
+              // defaultValue={values.someDate}
               label="End Time"
               name="endTime"
               value={endTime}
@@ -276,7 +307,17 @@ const Time = () => {
                     {item.endTime}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    <EditIcon onClick={handleClickOpen} />
+                    <EditIcon
+                      onClick={() => {
+                        editmodel(
+                          item._id,
+                          item.days,
+                          item.startTime,
+                          item.endTime
+                        );
+                        handleClickOpen();
+                      }}
+                    />
                     &nbsp; &nbsp; &nbsp;
                     <DeleteIcon onClick={() => handleDelete(item._id)} />
                   </StyledTableCell>

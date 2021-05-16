@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Grid from "@material-ui/core/Grid";
 
@@ -22,6 +22,8 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
 import { Redirect } from "react-router-dom";
+import axios from "axios";
+import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -74,45 +76,44 @@ const StyledTableRow = withStyles((theme) => ({
     },
   },
 }))(TableRow);
-function createData(name, email, subject, message, date) {
-  return { name, email, subject, message, date };
-}
-
-const rows = [
-  createData(
-    "Dipesh Shrestha",
-    "dipesh@gmail.com",
-    "need suggestion",
-    "hello world",
-    "12/2/2021"
-  ),
-  createData(
-    "Ram Shrestha",
-    "ram@gmail.com",
-    "need suggestion",
-    "hello world",
-    "12/2/2021"
-  ),
-  createData(
-    "Hari Shrestha",
-    "Hari@gmail.com",
-    "need suggestion",
-    "hello world",
-    "12/2/2021"
-  ),
-  createData(
-    "Siyam Shrestha",
-    "siyam@gmail.com",
-    "need suggestion",
-    "hello world",
-    "12/2/2021"
-  ),
-];
 
 const Time = () => {
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
+
+  //getting data from database
+  const [data, setData] = useState([]);
+  const fetchData = async () => {
+    axios.get("http://localhost:4000/contact/").then((response) => {
+      if (response.data) {
+        setData(response.data.data);
+      } else {
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //delete in database
+  const handleDelete = (id) => {
+    console.log(id);
+    axios
+      .delete("http://localhost:4000/contact/" + id, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        window.location.reload(false);
+        console.log("hello");
+        console.log(response);
+      });
+  };
+
+  //others
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -158,20 +159,22 @@ const Time = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <StyledTableRow key={row.name}>
-                  <StyledTableCell align="center">{row.name}</StyledTableCell>
-                  <StyledTableCell align="center">{row.email}</StyledTableCell>
+              {data.map((item) => (
+                <StyledTableRow key={item._id}>
+                  <StyledTableCell align="center">{item.name}</StyledTableCell>
+                  <StyledTableCell align="center">{item.email}</StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.subject}
+                    {item.subject}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.message}
+                    {item.message}
                   </StyledTableCell>
-                  <StyledTableCell align="center">{row.date}</StyledTableCell>
+                  <StyledTableCell align="center">
+                    {moment(item.date).format("LL")}
+                  </StyledTableCell>
                   <StyledTableCell align="center">
                     &nbsp; &nbsp; &nbsp;
-                    <DeleteIcon />
+                    <DeleteIcon onClick={() => handleDelete(item._id)} />
                   </StyledTableCell>
                 </StyledTableRow>
               ))}

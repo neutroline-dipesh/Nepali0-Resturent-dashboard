@@ -27,7 +27,7 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import InputLabel from "@material-ui/core/InputLabel";
 
-import { district } from "./district";
+import { data1 } from "./districts";
 import { Redirect } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
@@ -168,7 +168,7 @@ const Time = () => {
               <InputLabel id="demo-controlled-open-select-label">
                 Menu Type
               </InputLabel>
-              {district.map((items) => (
+              {data1.map((items) => (
                 <MenuItem value={items.name}>{items.name}</MenuItem>
               ))}
             </Select>

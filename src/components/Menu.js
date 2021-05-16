@@ -109,91 +109,91 @@ const Time = () => {
 
   if (loggedIn === false) {
     return <Redirect to="/" />;
-  }
-
-  return (
-    <>
-      <SideBar />
-      <Grid container className={classes.root}>
-        <h1>Menu</h1>
-        <br />
-        <Button
-          className={classes.addButton}
-          variant="contained"
-          color="primary"
-          onClick={handleClickOpen}
-        >
-          Add Menu
-        </Button>
-
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          aria-labelledby="form-dialog-title"
-        >
-          <DialogTitle id="form-dialog-title" className={classes.dialogTitle}>
-            Add/Update Menu
-          </DialogTitle>
-          <DialogContent className={classes.dialog}>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="name"
-              label="Menu"
-              type="text"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button
-              className={classes.dialogButton}
-              variant="contained"
-              color="primary"
-            >
-              {" "}
-              Submit
-            </Button>
-            <Button
-              className={classes.dialogButton}
-              variant="contained"
-              color="secondary"
-              onClick={handleClose}
-            >
-              Cancel
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        <br />
-        <TableContainer component={Paper} style={{ maxHeight: 450 }}>
-          <Table
-            className={classes.table}
-            aria-label="customized table"
-            stickyHeader
+  } else {
+    return (
+      <>
+        <SideBar />
+        <Grid container className={classes.root}>
+          <h1>Menu</h1>
+          <br />
+          <Button
+            className={classes.addButton}
+            variant="contained"
+            color="primary"
+            onClick={handleClickOpen}
           >
-            <TableHead>
-              <TableRow>
-                <StyledTableCell align="center">Menu</StyledTableCell>
-                <StyledTableCell align="center">Action</StyledTableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row) => (
-                <StyledTableRow key={row.menu}>
-                  <StyledTableCell align="center">{row.menu}</StyledTableCell>
+            Add Menu
+          </Button>
 
-                  <StyledTableCell align="center">
-                    <EditIcon onClick={handleClickOpen} />
-                    &nbsp; &nbsp; &nbsp;
-                    <DeleteIcon />
-                  </StyledTableCell>
-                </StyledTableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Grid>
-    </>
-  );
+          <Dialog
+            open={open}
+            onClose={handleClose}
+            aria-labelledby="form-dialog-title"
+          >
+            <DialogTitle id="form-dialog-title" className={classes.dialogTitle}>
+              Add/Update Menu
+            </DialogTitle>
+            <DialogContent className={classes.dialog}>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                label="Menu"
+                type="text"
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button
+                className={classes.dialogButton}
+                variant="contained"
+                color="primary"
+              >
+                {" "}
+                Submit
+              </Button>
+              <Button
+                className={classes.dialogButton}
+                variant="contained"
+                color="secondary"
+                onClick={handleClose}
+              >
+                Cancel
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <br />
+          <TableContainer component={Paper} style={{ maxHeight: 450 }}>
+            <Table
+              className={classes.table}
+              aria-label="customized table"
+              stickyHeader
+            >
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell align="center">Menu</StyledTableCell>
+                  <StyledTableCell align="center">Action</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {rows.map((row) => (
+                  <StyledTableRow key={row.menu}>
+                    <StyledTableCell align="center">{row.menu}</StyledTableCell>
+
+                    <StyledTableCell align="center">
+                      <EditIcon onClick={handleClickOpen} />
+                      &nbsp; &nbsp; &nbsp;
+                      <DeleteIcon />
+                    </StyledTableCell>
+                  </StyledTableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+      </>
+    );
+  }
 };
 
 export default Time;

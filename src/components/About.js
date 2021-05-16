@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Grid from "@material-ui/core/Grid";
 
@@ -25,11 +25,12 @@ import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormHelperText from "@material-ui/core/FormHelperText";
 
-import { data } from "./country";
-import { district } from "./district";
+import { countrys } from "./countrys";
+import { data1 } from "./districts";
 import InputLabel from "@material-ui/core/InputLabel";
 
 import { Redirect } from "react-router-dom";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -82,18 +83,40 @@ const StyledTableRow = withStyles((theme) => ({
     },
   },
 }))(TableRow);
-function createData(
-  companyName,
-  city,
-  district,
-  country,
-  phone,
-  email,
-  facebookUrl,
-  instaUrl,
-  youtubeUrl
-) {
-  return {
+
+const Time = () => {
+  const classes = useStyles();
+
+  const [open, setOpen] = React.useState(false);
+
+  //getting data from database
+  const [data, setData] = useState([]);
+  const fetchData = async () => {
+    axios.get("http://localhost:4000/about/").then((response) => {
+      if (response.data) {
+        setData(response.data.data);
+      } else {
+      }
+    });
+  };
+
+  //for post and update in database
+  const [post, setPost] = useState([
+    {
+      id: "",
+      companyName: "",
+      city: "",
+      district: "",
+      country: "",
+      phone: "",
+      email: "",
+      facebookUrl: "",
+      instaUrl: "",
+      youtubeUrl: "",
+    },
+  ]);
+  const {
+    id,
     companyName,
     city,
     district,
@@ -103,27 +126,96 @@ function createData(
     facebookUrl,
     instaUrl,
     youtubeUrl,
+  } = post;
+
+  const editmodel = (
+    id,
+    companyName,
+    city,
+    district,
+    country,
+    phone,
+    email,
+    facebookUrl,
+    instaUrl,
+    youtubeUrl
+  ) => {
+    // console.log(id);
+    setPost({
+      id: id,
+      companyName: companyName,
+      city: city,
+      district: district,
+      country: country,
+      phone: phone,
+      email: email,
+      facebookUrl: facebookUrl,
+      instaUrl: instaUrl,
+      youtubeUrl: youtubeUrl,
+    });
   };
-}
 
-const rows = [
-  createData(
-    "Treat Resturent",
-    "kathmandu",
-    "kathmandu",
-    "Nepal",
-    "9816940668",
-    "reat@gmail.com",
-    "https://www.facebook.com/",
-    "https://www.insta.com/",
-    "https://www.youtube.com/"
-  ),
-];
+  const changeHandler = (e) => {
+    setPost({ ...post, [e.target.name]: e.target.value });
+  };
+  // console.log(post);
 
-const Time = () => {
-  const classes = useStyles();
+  const submitHandler = (e) => {
+    e.preventDefault();
+    if (post.id) {
+      axios
+        .patch("http://localhost:4000/about/" + post.id, post, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        })
+        .then((response) => {
+          window.location.reload(false);
+          // console.log("hello");
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      axios
+        .post("http://localhost:4000/about/", post, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        })
+        .then((response) => {
+          window.location.reload(false);
+          // console.log("hello");
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  };
 
-  const [open, setOpen] = React.useState(false);
+  //delete in database
+  const handleDelete = (id) => {
+    console.log(id);
+    axios
+      .delete("http://localhost:4000/about/" + id, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        window.location.reload(false);
+        console.log("hello");
+        console.log(response);
+      });
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //others
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -171,6 +263,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="companyName"
+              value={companyName}
+              onChange={changeHandler}
               label="Company Name"
               type="text"
             />
@@ -178,6 +273,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="city"
+              value={city}
+              onChange={changeHandler}
               label="City"
               type="text"
             />
@@ -188,11 +286,14 @@ const Time = () => {
               id="demo-simple-select"
               displayEmpty
               inputProps={{ "aria-label": "Without label" }}
+              name="district"
+              value={district}
+              onChange={changeHandler}
             >
               <InputLabel id="demo-controlled-open-select-label">
                 District
               </InputLabel>
-              {district.map((items) => (
+              {data1.map((items) => (
                 <MenuItem value={items.name}>{items.name}</MenuItem>
               ))}
             </Select>
@@ -202,11 +303,14 @@ const Time = () => {
               id="demo-simple-select"
               displayEmpty
               inputProps={{ "aria-label": "Without label" }}
+              name="country"
+              value={country}
+              onChange={changeHandler}
             >
               <InputLabel id="demo-controlled-open-select-label">
                 Country
               </InputLabel>
-              {data.map((items) => (
+              {countrys.map((items) => (
                 <MenuItem value={items.name}>{items.name}</MenuItem>
               ))}
             </Select>
@@ -215,6 +319,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="phone"
+              value={phone}
+              onChange={changeHandler}
               label="Phone"
               type="number"
             />
@@ -222,6 +329,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="email"
+              value={email}
+              onChange={changeHandler}
               label="Email"
               type="email"
             />
@@ -229,6 +339,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="facebookUrl"
+              value={facebookUrl}
+              onChange={changeHandler}
               label="Facebook URL"
               type="text"
             />
@@ -236,6 +349,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="instaUrl"
+              value={instaUrl}
+              onChange={changeHandler}
               label="Insta URL"
               type="text"
             />
@@ -243,6 +359,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="youtubeUrl"
+              value={youtubeUrl}
+              onChange={changeHandler}
               label="Youtube URL"
               type="text"
             />
@@ -252,6 +371,7 @@ const Time = () => {
               className={classes.dialogButton}
               variant="contained"
               color="primary"
+              onClick={submitHandler}
             >
               {" "}
               Submit
@@ -292,33 +412,49 @@ const Time = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <StyledTableRow key={row.companyName}>
+              {data.map((item) => (
+                <StyledTableRow key={item._id}>
                   <StyledTableCell align="center">
-                    {row.companyName}
+                    {item.companyName}
                   </StyledTableCell>
-                  <StyledTableCell align="center">{row.city}</StyledTableCell>
+                  <StyledTableCell align="center">{item.city}</StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.district}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">
-                    {row.country}
-                  </StyledTableCell>
-                  <StyledTableCell align="center">{row.phone}</StyledTableCell>
-                  <StyledTableCell align="center">{row.email}</StyledTableCell>
-                  <StyledTableCell align="center">
-                    {row.facebookUrl}
+                    {item.district}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.instaUrl}
+                    {item.country}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">{item.phone}</StyledTableCell>
+                  <StyledTableCell align="center">{item.email}</StyledTableCell>
+                  <StyledTableCell align="center">
+                    {item.facebookUrl}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.youtubeUrl}
+                    {item.instaUrl}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    <EditIcon onClick={handleClickOpen} />
+                    {item.youtubeUrl}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    <EditIcon
+                      onClick={() => {
+                        editmodel(
+                          item._id,
+                          item.companyName,
+                          item.city,
+                          item.district,
+                          item.country,
+                          item.phone,
+                          item.email,
+                          item.facebookUrl,
+                          item.instaUrl,
+                          item.youtubeUrl
+                        );
+                        handleClickOpen();
+                      }}
+                    />
                     &nbsp; &nbsp; &nbsp;
-                    <DeleteIcon />
+                    <DeleteIcon onClick={() => handleDelete(item._id)} />
                   </StyledTableCell>
                 </StyledTableRow>
               ))}
