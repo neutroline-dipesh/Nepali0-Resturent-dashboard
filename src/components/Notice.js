@@ -131,7 +131,7 @@ const Time = () => {
           },
         })
         .then((response) => {
-          // window.location.reload(false);
+          window.location.reload(false);
           // console.log("hello");
           console.log(response);
         })
@@ -146,7 +146,7 @@ const Time = () => {
           },
         })
         .then((response) => {
-          // window.location.reload(false);
+          window.location.reload(false);
           // console.log("hello");
           console.log(response);
         })

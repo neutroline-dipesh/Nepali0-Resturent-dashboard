@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "./SideBar";
 import Grid from "@material-ui/core/Grid";
 
@@ -21,6 +21,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { Redirect } from "react-router-dom";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -73,25 +74,101 @@ const StyledTableRow = withStyles((theme) => ({
     },
   },
 }))(TableRow);
-function createData(menu) {
-  return { menu };
-}
-
-const rows = [
-  createData("Burger"),
-  createData("Sushage"),
-  createData("Cheese"),
-  createData("pizza"),
-  createData("Drinks"),
-  createData("MOMO"),
-  createData("Chaumin"),
-];
 
 const Time = () => {
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
+  //getting data from database
+  const [data, setData] = useState([]);
+  const fetchData = async () => {
+    axios.get("http://localhost:4000/menu/").then((response) => {
+      if (response.data) {
+        setData(response.data.data);
+      } else {
+      }
+    });
+  };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //for post and update in database
+  const [post, setPost] = useState([
+    {
+      id: "",
+      menu: "",
+    },
+  ]);
+  const { id, menu } = post;
+
+  const editmodel = (id, menu) => {
+    // console.log(id);
+    setPost({
+      id: id,
+      menu: menu,
+    });
+  };
+
+  const changeHandler = (e) => {
+    setPost({ ...post, [e.target.name]: e.target.value });
+  };
+  // console.log(post);
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    console.log(post);
+    if (post.id) {
+      axios
+        .patch("http://localhost:4000/menu/" + post.id, post, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        })
+        .then((response) => {
+          window.location.reload(false);
+          // console.log("hello");
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      axios
+        .post("http://localhost:4000/menu/", post, {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        })
+        .then((response) => {
+          window.location.reload(false);
+          // console.log("hello");
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  };
+
+  //delete in database
+  const handleDelete = (id) => {
+    console.log(id);
+    axios
+      .delete("http://localhost:4000/menu/" + id, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        window.location.reload(false);
+        // console.log("hello");
+        console.log(response);
+      });
+  };
+
+  //others
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -138,6 +215,9 @@ const Time = () => {
                 autoFocus
                 margin="dense"
                 id="name"
+                name="menu"
+                value={menu}
+                onChange={changeHandler}
                 label="Menu"
                 type="text"
               />
@@ -147,6 +227,7 @@ const Time = () => {
                 className={classes.dialogButton}
                 variant="contained"
                 color="primary"
+                onClick={submitHandler}
               >
                 {" "}
                 Submit
@@ -176,14 +257,21 @@ const Time = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((row) => (
-                  <StyledTableRow key={row.menu}>
-                    <StyledTableCell align="center">{row.menu}</StyledTableCell>
+                {data.map((item) => (
+                  <StyledTableRow key={item._id}>
+                    <StyledTableCell align="center">
+                      {item.menu}
+                    </StyledTableCell>
 
                     <StyledTableCell align="center">
-                      <EditIcon onClick={handleClickOpen} />
+                      <EditIcon
+                        onClick={() => {
+                          editmodel(item._id, item.menu);
+                          handleClickOpen();
+                        }}
+                      />
                       &nbsp; &nbsp; &nbsp;
-                      <DeleteIcon />
+                      <DeleteIcon onClick={() => handleDelete(item._id)} />
                     </StyledTableCell>
                   </StyledTableRow>
                 ))}

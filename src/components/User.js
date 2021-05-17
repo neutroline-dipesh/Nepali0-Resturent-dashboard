@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Grid from "@material-ui/core/Grid";
 
@@ -21,6 +21,8 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { Redirect } from "react-router-dom";
+import axios from "axios";
+import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -73,24 +75,71 @@ const StyledTableRow = withStyles((theme) => ({
     },
   },
 }))(TableRow);
-function createData(name, email, createData) {
-  return { name, email, createData };
-}
-
-const rows = [
-  createData("Dipesh Shrestha", "dipeshxtha1292@gmail.com", "2/3/2021"),
-  createData("Shiyam Shrestha", "shyam@gmail.com", "2/3/2021"),
-
-  createData("Ram Shrestha", "ram@gmail.com", "2/3/2021"),
-
-  createData("Hari Shrestha", "hari@gmail.com", "2/3/2021"),
-];
 
 const Time = () => {
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
+  //getting data from database
+  const [data, setData] = useState([]);
+  const fetchData = async () => {
+    axios.get("http://localhost:4000/user/").then((response) => {
+      if (response.data) {
+        setData(response.data.data);
+      } else {
+      }
+    });
+  };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //for post and update in database
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    conformpassword: "",
+  });
+  const { name, email, password, conformpassword } = userData;
+
+  const changeHandler = (e) => {
+    setUserData({ ...userData, [e.target.name]: e.target.value });
+  };
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    console.log(userData);
+    axios
+      .post("http://localhost:4000/user/signup/", userData)
+      .then((response) => {
+        window.location.reload(false);
+        // console.log("hello");
+        console.log(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  //delete in database
+  const handleDelete = (id) => {
+    console.log(id);
+    axios
+      .delete("http://localhost:4000/user/" + id, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        window.location.reload(false);
+        console.log("hello");
+        console.log(response);
+      });
+  };
+
+  //others
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -137,6 +186,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="name"
+              value={name}
+              onChange={changeHandler}
               label="Name"
               type="text"
             />
@@ -144,6 +196,9 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="email"
+              value={email}
+              onChange={changeHandler}
               label="Email"
               type="text"
             />
@@ -151,15 +206,21 @@ const Time = () => {
               autoFocus
               margin="dense"
               id="name"
+              name="password"
+              value={password}
+              onChange={changeHandler}
               label="Password"
-              type="text"
+              type="password"
             />
             <TextField
               autoFocus
               margin="dense"
               id="name"
+              name="conformpassword"
+              value={conformpassword}
+              onChange={changeHandler}
               label="Confirm Password"
-              type="text"
+              type="password"
             />
           </DialogContent>
           <DialogActions>
@@ -167,6 +228,7 @@ const Time = () => {
               className={classes.dialogButton}
               variant="contained"
               color="primary"
+              onClick={submitHandler}
             >
               {" "}
               Submit
@@ -198,17 +260,17 @@ const Time = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <StyledTableRow key={row.name}>
-                  <StyledTableCell align="center">{row.name}</StyledTableCell>
-                  <StyledTableCell align="center">{row.email}</StyledTableCell>
+              {data.map((item) => (
+                <StyledTableRow key={item._id}>
+                  <StyledTableCell align="center">{item.name}</StyledTableCell>
+                  <StyledTableCell align="center">{item.email}</StyledTableCell>
                   <StyledTableCell align="center">
-                    {row.createData}
+                    {moment(item.createAt).format("LL")}
                   </StyledTableCell>
                   <StyledTableCell align="center">
                     <EditIcon onClick={handleClickOpen} />
                     &nbsp; &nbsp; &nbsp;
-                    <DeleteIcon />
+                    <DeleteIcon onClick={() => handleDelete(item._id)} />
                   </StyledTableCell>
                 </StyledTableRow>
               ))}
