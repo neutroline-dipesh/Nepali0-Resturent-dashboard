@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import SideBar from "../components/SideBar";
 import Grid from "@material-ui/core/Grid";
 
@@ -29,6 +29,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 
 import { data1 } from "./districts";
 import { Redirect } from "react-router-dom";
+import axios from "axios";
 
 const useStyles = makeStyles((theme) => ({
   mainDiv: {},
@@ -36,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Montserrat, sans-serif",
 
     width: "auto",
-    height: "100vh",
+    maxheight: "100vh",
 
     padding: "1rem",
     color: "#2f4050",
@@ -51,9 +52,13 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     top: "18vh",
   },
+  MainTable: {
+    marginTop: "1.5rem",
+  },
   table: {
     width: "75vw",
     overflow: "auto",
+    // marginTop: "2rem",
   },
   mainDialog: {},
   dialog: {
@@ -67,7 +72,7 @@ const useStyles = makeStyles((theme) => ({
   image: {
     width: "auto",
     height: "50px",
-    borderRadius: "50%",
+    // borderRadius: "50%",
   },
 }));
 
@@ -88,34 +93,174 @@ const StyledTableRow = withStyles((theme) => ({
     },
   },
 }))(TableRow);
-function createData(name, description, image, price) {
-  return { name, description, image, price };
-}
-
-const rows = [
-  createData("BUFF MOMO", "bff, onion , chilly, all", images, "Rs 120"),
-  createData("Chicken MOMO", "Chicken, onion , chilly, all", images, "Rs 120"),
-  createData("Steam Buff MOMO", "bff, onion , chilly, all", images, "Rs 120"),
-  createData(
-    "Steam Cicken MOMO",
-    "Chicken, onion , chilly, all",
-    images,
-    "Rs 120"
-  ),
-  createData("BUff C MOMO", "bff, onion , chilly, all", images, "Rs 120"),
-  createData(
-    "Chicken C MOMO",
-    "Chicken, onion , chilly, all",
-    images,
-    "Rs 120"
-  ),
-];
 
 const Time = () => {
   const classes = useStyles();
 
   const [open, setOpen] = React.useState(false);
+  //getting data from database
+  const [data, setData] = useState([]);
+  const fetchData = async () => {
+    axios.get("http://localhost:4000/menu/").then((response) => {
+      if (response.data) {
+        setData(response.data.data);
+      } else {
+      }
+    });
+  };
 
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  //delete in database
+  const [selectedmenuItemData, setSelectedMenuItemData] = useState([]);
+  const [selectedMenuId, setSelectedMenuId] = useState([]);
+
+  const handleDelete = (MenuItemid, _menuItemId) => {
+    // console.log(id);
+    const data = {
+      _menuItem: MenuItemid,
+    };
+
+    // console.log(selectedMenuId);
+    // console.log(data);
+    // console.log(_menuItemId);
+    // axios
+    //   .delete("http://localhost:4000/menuItem/" + _menuItemId, {
+    //     headers: {
+    //       Authorization: localStorage.getItem("token"),
+    //     },
+    //   })
+    //   .then((response) => {
+    //     // window.location.reload(false);
+    //     // console.log(response);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
+    axios
+      .delete("http://localhost:4000/menu/menuItem/" + selectedMenuId, {
+        data: {
+          _menuItem: MenuItemid,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        // window.location.reload(false);
+        // console.log("MenuItem Deleted");
+        // console.log("MenuItem deleted from menu");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  //for post and update in database
+  const [option, setOption] = useState(null);
+  const [updataData, setUpdataData] = useState([
+    {
+      id: "",
+      menuItemId: "",
+      name: "",
+      description: "",
+      image: "",
+      price: "",
+    },
+  ]);
+
+  function handleChange(event) {
+    setOption(event.target.value);
+  }
+  const [pic, setPic] = useState(null);
+
+  const fileSelectedHandler = (event) => {
+    setPic(event.target.files[0]);
+  };
+
+  const editmodel = (id, menuItemId, name, description, image, price) => {
+    // console.log(id);
+    setUpdataData({
+      id: id,
+
+      menuItemId: menuItemId,
+      name: name,
+      description: description,
+      image: image,
+      price: price,
+    });
+    console.log(updataData);
+  };
+
+  const submitHandler = (e) => {
+    var name = document.getElementById("name").value;
+    var desc = document.getElementById("description").value;
+    var price = document.getElementById("price").value;
+    var menu = option;
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("price", price);
+    formData.append("description", desc);
+    formData.append("image", pic);
+
+    e.preventDefault();
+    // console.log(post);
+
+    axios
+      .post("http://localhost:4000/menuItem/", formData, {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((response) => {
+        var id = response.data.data._id;
+
+        const data = {
+          _menuItem: id,
+        };
+        // console.log("meny type :", menu);
+        // console.log("menuItem:", data);
+        console.log(data);
+        return axios
+          .post("http://localhost:4000/menu/menuItem/" + menu, data, {
+            headers: {
+              Authorization: localStorage.getItem("token"),
+            },
+          })
+          .then((response) => {
+            // window.location.reload(false);
+            console.log("menu Item added");
+            console.log(response);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+    // if (post.id) {
+    //   axios
+    //     .patch("http://localhost:4000/time/" + post.id, post, {
+    //       headers: {
+    //         Authorization: localStorage.getItem("token"),
+    //       },
+    //     })
+    //     .then((response) => {
+    //       window.location.reload(false);
+    //       // console.log("hello");
+    //       console.log(response);
+    //     })
+    //     .catch((error) => {
+    //       console.log(error);
+    //     });
+    // } else {
+
+    // }
+  };
+
+  //others
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -161,42 +306,57 @@ const Time = () => {
           <DialogContent className={classes.dialog}>
             <Select
               labelId="demo-simple-select-label"
-              id="demo-simple-select"
+              id="menu"
+              name="menu"
+              value={selectedMenuId}
+              onChange={handleChange}
               displayEmpty
               inputProps={{ "aria-label": "Without label" }}
             >
               <InputLabel id="demo-controlled-open-select-label">
                 Menu Type
               </InputLabel>
-              {data1.map((items) => (
-                <MenuItem value={items.name}>{items.name}</MenuItem>
+              {data.map((items) => (
+                <MenuItem value={items._id}>{items.menu}</MenuItem>
               ))}
             </Select>
             <TextField
               autoFocus
               margin="dense"
               id="name"
+              name="name"
+              value={updataData.name}
+              // onChange={changeHandler}
               label="name"
               type="text"
             />
             <TextField
               autoFocus
               margin="dense"
-              id="name"
+              id="description"
+              name="description"
+              value={updataData.description}
+              // onChange={changeHandler}
               label="description"
               type="text"
             />
             <TextField
               autoFocus
               margin="dense"
-              id="name"
+              id="image"
+              name="image"
+              // value={updataData.image}
+              onChange={fileSelectedHandler}
               label="image"
               type="file"
             />
             <TextField
               autoFocus
               margin="dense"
-              id="name"
+              id="price"
+              name="price"
+              value={updataData.price}
+              // onChange={changeHandler}
               label="price"
               type="text"
             />
@@ -206,6 +366,7 @@ const Time = () => {
               className={classes.dialogButton}
               variant="contained"
               color="primary"
+              onClick={submitHandler}
             >
               {" "}
               Submit
@@ -221,9 +382,16 @@ const Time = () => {
           </DialogActions>
         </Dialog>
 
-        <MenuItemTabBar />
+        <MenuItemTabBar
+          menuItemData={(data) => setSelectedMenuItemData(data)}
+          menuId={(data) => setSelectedMenuId(data)}
+        />
 
-        <TableContainer component={Paper} style={{ maxHeight: 370 }}>
+        <TableContainer
+          className={classes.MainTable}
+          component={Paper}
+          style={{ maxHeight: 370 }}
+        >
           <Table
             className={classes.table}
             aria-label="customized table"
@@ -239,20 +407,38 @@ const Time = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows.map((row) => (
-                <StyledTableRow key={row.name}>
-                  <StyledTableCell align="center">{row.name}</StyledTableCell>
+              {selectedmenuItemData.map((item) => (
+                <StyledTableRow key={item._menuItem._id}>
                   <StyledTableCell align="center">
-                    {row.description}
+                    {item._menuItem.name}
                   </StyledTableCell>
                   <StyledTableCell align="center">
-                    <img className={classes.image} src={row.image} />
+                    {item._menuItem.description}
                   </StyledTableCell>
-                  <StyledTableCell align="center">{row.price}</StyledTableCell>
                   <StyledTableCell align="center">
-                    <EditIcon onClick={handleClickOpen} />
+                    <img className={classes.image} src={item._menuItem.image} />
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    Rs {item._menuItem.price}
+                  </StyledTableCell>
+                  <StyledTableCell align="center">
+                    <EditIcon
+                      onClick={() => {
+                        editmodel(
+                          item._id,
+                          item._menuItem._id,
+                          item._menuItem.name,
+                          item._menuItem.description,
+                          item._menuItem.image,
+                          item._menuItem.price
+                        );
+                        handleClickOpen();
+                      }}
+                    />
                     &nbsp; &nbsp; &nbsp;
-                    <DeleteIcon />
+                    <DeleteIcon
+                      onClick={() => handleDelete(item._id, item._menuItem._id)}
+                    />
                   </StyledTableCell>
                 </StyledTableRow>
               ))}
